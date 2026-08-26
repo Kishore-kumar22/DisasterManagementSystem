@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Shelter Management | Responda{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="eyebrow">RESOURCE COORDINATION</div>
+        <h1>Shelter management</h1>
+        <p>Monitor shelter capacity and available space during emergencies.</p>
+    </div>
+
+    <a href="{{ url_for('main.create_shelter') }}" class="btn btn-primary">
+        + Add shelter
+    </a>
+</div>
+
+<div class="card-grid">
+    {% for shelter in shelters %}
+    <div class="card">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3>{{ shelter.name }}</h3>
+                    <p class="text-muted">{{ shelter.location }}</p>
+                </div>
+
+                {% if shelter.status == "Full" %}
+                    <span class="badge bg-danger">Full</span>
+                {% elif shelter.status == "Nearly Full" %}
+                    <span class="badge bg-warning text-dark">Nearly Full</span>
+                {% else %}
+                    <span class="badge bg-success">Available</span>
+                {% endif %}
+            </div>
+
+            <hr>
+
+            <div class="row text-center">
+                <div class="col">
+                    <strong>{{ shelter.capacity }}</strong>
+                    <small class="d-block text-muted">Capacity</small>
+                </div>
+
+                <div class="col">
+                    <strong>{{ shelter.occupied }}</strong>
+                    <small class="d-block text-muted">Occupied</small>
+                </div>
+
+                <div class="col">
+                    <strong>{{ shelter.available_spaces }}</strong>
+                    <small class="d-block text-muted">Available</small>
+                </div>
+            </div>
+
+            {% if shelter.capacity > 0 %}
+                {% set occupancy = ((shelter.occupied / shelter.capacity) * 100) | round(0) | int %}
+            {% else %}
+                {% set occupancy = 0 %}
+            {% endif %}
+
+            <div class="mt-3">
+                <div class="d-flex justify-content-between">
+                    <small>Occupancy</small>
+                    <small>{{ occupancy }}%</small>
+                </div>
+
+                <div class="progress">
+                    <div
+                        class="progress-bar"
+                        role="progressbar"
+                        data-width="{{ occupancy }}"
+                        aria-valuenow="{{ occupancy }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <small class="text-muted">
+                    Contact: {{ shelter.contact or "Not provided" }}
+                </small>
+            </div>
+
+        </div>
+    </div>
+
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <h3>No shelters registered</h3>
+
+            <p class="text-muted">
+                Add your first emergency shelter to begin tracking capacity.
+            </p>
+
+            <a
+                href="{{ url_for('main.create_shelter') }}"
+                class="btn btn-primary">
+                Add shelter
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".progress-bar").forEach(function (bar) {
+        const width = bar.dataset.width || "0";
+        bar.style.width = width + "%";
+    });
+});
+</script>
+
+{% endblock %}

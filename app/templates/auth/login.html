@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Sign in | Responda{% endblock %}
+{% block content %}
+<div class="login-shell row g-0 shadow-lg overflow-hidden">
+  <div class="col-lg-7 login-hero p-5 d-flex flex-column justify-content-between">
+    <div><span class="eyebrow">EMERGENCY OPERATIONS ANALYTICS</span><h1 class="display-5 fw-bold mt-3">Coordinate response with clarity.</h1><p class="lead text-white-50">A practical incident, resource, and analytics workspace for emergency response teams.</p></div>
+    <div class="small text-white-50"><i class="bi bi-lock-fill me-1"></i>Secure session-based access with role-aware workflows.</div>
+  </div>
+  <div class="col-lg-5 bg-white p-5">
+    <div class="mb-4"><span class="eyebrow text-primary">COMMAND ACCESS</span><h2 class="fw-bold mt-2">Sign in</h2><p class="text-muted">Use your Responda account to continue.</p></div>
+    <form method="post" novalidate>
+      <div class="mb-3"><label class="form-label">Email</label><input class="form-control form-control-lg" type="email" name="email" placeholder="admin@example.com" required autofocus></div>
+      <div class="mb-4"><label class="form-label">Password</label><input class="form-control form-control-lg" type="password" name="password" placeholder="Enter password" required></div>
+      <button class="btn btn-primary btn-lg w-100" type="submit">Sign in <i class="bi bi-arrow-right ms-2"></i></button>
+    </form>
+    <div class="demo-hint mt-4"><strong>Demo accounts</strong><br>Admin: admin@example.com / Admin@123<br>Responder: responder@example.com / Responder@123</div>
+  </div>
+</div>
+{% endblock %}

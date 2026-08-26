@@ -1,0 +1,656 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | Responda{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <span class="eyebrow">OPERATIONS OVERVIEW</span>
+        <h1 class="page-title mb-1">Emergency command dashboard</h1>
+        <p class="text-muted mb-0">
+            Monitor incidents, response activity, resource readiness, and shelter capacity from one workspace.
+        </p>
+    </div>
+
+    <a
+        class="btn btn-danger"
+        href="{{ url_for('disasters.create_incident') }}"
+    >
+        <i class="bi bi-plus-lg me-1"></i>
+        Report incident
+    </a>
+</div>
+
+
+<!-- KPI SECTION -->
+<div class="row g-3 mb-4">
+
+    <!-- Total incidents -->
+    <div class="col-sm-6 col-xl">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-primary-subtle text-primary">
+                <i class="bi bi-exclamation-diamond"></i>
+            </div>
+
+            <span class="kpi-label">Total incidents</span>
+            <strong>{{ total_incidents }}</strong>
+            <small class="text-muted">All records in database</small>
+        </div>
+    </div>
+
+
+    <!-- Active incidents -->
+    <div class="col-sm-6 col-xl">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-warning-subtle text-warning-emphasis">
+                <i class="bi bi-broadcast"></i>
+            </div>
+
+            <span class="kpi-label">Active incidents</span>
+            <strong>{{ active_incidents }}</strong>
+            <small class="text-muted">Not yet resolved</small>
+        </div>
+    </div>
+
+
+    <!-- Critical incidents -->
+    <div class="col-sm-6 col-xl">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-danger-subtle text-danger">
+                <i class="bi bi-fire"></i>
+            </div>
+
+            <span class="kpi-label">Critical incidents</span>
+            <strong>{{ critical_incidents }}</strong>
+            <small class="text-muted">Severity or priority critical</small>
+        </div>
+    </div>
+
+
+    <!-- People affected -->
+    <div class="col-sm-6 col-xl">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-info-subtle text-info-emphasis">
+                <i class="bi bi-people"></i>
+            </div>
+
+            <span class="kpi-label">People affected</span>
+            <strong>{{ "{:,}".format(people_affected) }}</strong>
+            <small class="text-muted">Across all incidents</small>
+        </div>
+    </div>
+
+
+    <!-- Available resources -->
+    <div class="col-sm-6 col-xl">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-success-subtle text-success">
+                <i class="bi bi-box-seam"></i>
+            </div>
+
+            <span class="kpi-label">Available resources</span>
+            <strong>{{ "{:,}".format(available_resources) }}</strong>
+            <small class="text-muted">Inventory units ready</small>
+        </div>
+    </div>
+
+
+    <!-- Shelter capacity -->
+    <div class="col-sm-6 col-xl">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-secondary-subtle text-secondary">
+                <i class="bi bi-house-heart"></i>
+            </div>
+
+            <span class="kpi-label">Shelter capacity</span>
+            <strong>{{ "{:,}".format(shelter_capacity) }}</strong>
+
+            <small class="text-muted">
+                {{ total_shelters }}
+                registered shelter{% if total_shelters != 1 %}s{% endif %}
+            </small>
+        </div>
+    </div>
+
+
+    <!-- Available shelter spaces -->
+    <div class="col-sm-6 col-xl">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-primary-subtle text-primary">
+                <i class="bi bi-door-open"></i>
+            </div>
+
+            <span class="kpi-label">Shelter spaces</span>
+            <strong>{{ "{:,}".format(shelter_available) }}</strong>
+
+            <small class="text-muted">
+                {{ "{:,}".format(shelter_occupied) }} currently occupied
+            </small>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- MAP + PRIORITY QUEUE -->
+<div class="row g-4 mb-4">
+
+    <div class="col-xl-8">
+        <div class="panel-card h-100">
+
+            <div class="panel-header">
+                <div>
+                    <h5>Incident map</h5>
+                    <p>Database-driven disaster markers</p>
+                </div>
+
+                <a
+                    href="{{ url_for('disasters.list_incidents') }}"
+                    class="btn btn-sm btn-outline-secondary"
+                >
+                    View all
+                </a>
+            </div>
+
+            <div id="dashboardMap" class="map-box"></div>
+
+        </div>
+    </div>
+
+
+    <div class="col-xl-4">
+        <div class="panel-card h-100">
+
+            <div class="panel-header">
+                <div>
+                    <h5>Priority queue</h5>
+                    <p>Highest current scores</p>
+                </div>
+            </div>
+
+            <div class="list-group list-group-flush">
+
+                {% for incident in priority_incidents %}
+
+                <a
+                    href="{{ url_for('disasters.detail', disaster_id=incident.id) }}"
+                    class="list-group-item list-group-item-action px-0"
+                >
+
+                    <div class="d-flex justify-content-between gap-2">
+
+                        <span class="fw-semibold text-truncate">
+                            {{ incident.title }}
+                        </span>
+
+                        <span class="priority-badge priority-{{ incident.priority_category|lower }}">
+                            {{ incident.priority_category }}
+                        </span>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between small text-muted mt-1">
+
+                        <span>
+                            {{ incident.disaster_type }} · {{ incident.severity }}
+                        </span>
+
+                        <span class="fw-bold">
+                            {{ '%.2f'|format(incident.priority_score) }}
+                        </span>
+
+                    </div>
+
+                </a>
+
+                {% else %}
+
+                <div class="text-muted py-4">
+                    No active priority incidents.
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ANALYTICS CHARTS -->
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-6">
+        <div class="panel-card chart-card">
+
+            <div class="panel-header">
+                <div>
+                    <h5>Incidents by type</h5>
+                    <p>Pandas analytics from MySQL records</p>
+                </div>
+            </div>
+
+            <canvas id="incidentTypeChart"></canvas>
+
+        </div>
+    </div>
+
+
+    <div class="col-lg-6">
+        <div class="panel-card chart-card">
+
+            <div class="panel-header">
+                <div>
+                    <h5>Incidents by severity</h5>
+                    <p>Current distribution of reported cases</p>
+                </div>
+            </div>
+
+            <canvas id="severityChart"></canvas>
+
+        </div>
+    </div>
+
+</div>
+
+
+<!-- SHELTER SUMMARY -->
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-5">
+        <div class="panel-card h-100">
+
+            <div class="panel-header">
+
+                <div>
+                    <h5>Shelter capacity overview</h5>
+                    <p>Current emergency accommodation status</p>
+                </div>
+
+                <a
+                    href="{{ url_for('main.shelters') }}"
+                    class="btn btn-sm btn-outline-secondary"
+                >
+                    Manage
+                </a>
+
+            </div>
+
+
+            <div class="row text-center g-3">
+
+                <div class="col-4">
+                    <div class="p-3 rounded bg-light">
+
+                        <div class="text-muted small">
+                            Shelters
+                        </div>
+
+                        <div class="fs-3 fw-bold">
+                            {{ total_shelters }}
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <div class="col-4">
+                    <div class="p-3 rounded bg-light">
+
+                        <div class="text-muted small">
+                            Capacity
+                        </div>
+
+                        <div class="fs-3 fw-bold">
+                            {{ "{:,}".format(shelter_capacity) }}
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <div class="col-4">
+                    <div class="p-3 rounded bg-light">
+
+                        <div class="text-muted small">
+                            Available
+                        </div>
+
+                        <div class="fs-3 fw-bold text-success">
+                            {{ "{:,}".format(shelter_available) }}
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+            {% if shelter_capacity > 0 %}
+
+                {% set shelter_occupancy =
+                    ((shelter_occupied / shelter_capacity) * 100)
+                    | round(0)
+                    | int
+                %}
+
+            {% else %}
+
+                {% set shelter_occupancy = 0 %}
+
+            {% endif %}
+
+
+            <div class="mt-4">
+
+                <div class="d-flex justify-content-between mb-1">
+
+                    <span class="small text-muted">
+                        Overall occupancy
+                    </span>
+
+                    <span class="small fw-semibold">
+                        {{ shelter_occupancy }}%
+                    </span>
+
+                </div>
+
+
+                <div class="progress">
+
+                    <div
+                        class="progress-bar"
+                        role="progressbar"
+                        data-width="{{ shelter_occupancy }}"
+                        aria-valuenow="{{ shelter_occupancy }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="col-lg-7">
+        <div class="panel-card h-100">
+
+            <div class="panel-header">
+
+                <div>
+                    <h5>Shelter monitoring</h5>
+                    <p>Capacity and occupancy decision support</p>
+                </div>
+
+                <a
+                    href="{{ url_for('main.shelters') }}"
+                    class="btn btn-sm btn-outline-primary"
+                >
+                    View shelters
+                </a>
+
+            </div>
+
+
+            <div class="alert alert-info mb-0">
+
+                <div class="d-flex gap-3 align-items-start">
+
+                    <i class="bi bi-house-heart fs-4"></i>
+
+                    <div>
+
+                        <strong>
+                            Shelter readiness
+                        </strong>
+
+                        <div class="small mt-1">
+
+                            {{ "{:,}".format(shelter_available) }}
+                            accommodation spaces are currently available
+                            across
+                            {{ total_shelters }}
+                            registered shelter{% if total_shelters != 1 %}s{% endif %}.
+
+                            {{ "{:,}".format(shelter_occupied) }}
+                            spaces are currently occupied.
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+<!-- RECENT INCIDENTS + ALERTS -->
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-8">
+
+        <div class="panel-card">
+
+            <div class="panel-header">
+
+                <div>
+                    <h5>Recent incidents</h5>
+                    <p>Latest records from the incident register</p>
+                </div>
+
+                <a
+                    href="{{ url_for('disasters.list_incidents') }}"
+                    class="btn btn-sm btn-outline-secondary"
+                >
+                    Manage
+                </a>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table align-middle table-hover mb-0">
+
+                    <thead>
+
+                        <tr>
+                            <th>Incident</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th></th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for incident in recent_incidents %}
+
+                        <tr>
+
+                            <td>
+
+                                <div class="fw-semibold">
+                                    {{ incident.title }}
+                                </div>
+
+                                <small class="text-muted">
+                                    {{ incident.disaster_type }}
+                                    ·
+                                    {{ incident.occurred_at.strftime('%d %b %Y') }}
+                                </small>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="severity-badge severity-{{ incident.severity|lower }}">
+                                    {{ incident.severity }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="status-badge status-{{ incident.status|lower|replace(' ', '-') }}">
+                                    {{ incident.status }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+                                    {{ '%.2f'|format(incident.priority_score) }}
+                                </strong>
+
+                                <br>
+
+                                <small class="text-muted">
+                                    {{ incident.priority_category }}
+                                </small>
+
+                            </td>
+
+
+                            <td>
+
+                                <a
+                                    class="btn btn-sm btn-light"
+                                    href="{{ url_for('disasters.detail', disaster_id=incident.id) }}"
+                                >
+                                    <i class="bi bi-arrow-up-right"></i>
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+
+                            <td
+                                colspan="5"
+                                class="text-center text-muted py-4"
+                            >
+                                No incidents recorded.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-lg-4">
+
+        <div class="panel-card h-100">
+
+            <div class="panel-header">
+
+                <div>
+                    <h5>Active alerts</h5>
+                    <p>In-application broadcasts</p>
+                </div>
+
+                <a
+                    href="{{ url_for('alerts.list_alerts') }}"
+                    class="btn btn-sm btn-outline-secondary"
+                >
+                    View
+                </a>
+
+            </div>
+
+
+            {% for alert in recent_alerts %}
+
+            <div class="alert-row">
+
+                <div class="alert-dot alert-dot-{{ alert.severity|lower }}"></div>
+
+                <div>
+
+                    <div class="fw-semibold">
+                        {{ alert.title }}
+                    </div>
+
+                    <div class="small text-muted">
+                        {{ alert.message|truncate(90) }}
+                    </div>
+
+                    <small class="text-muted">
+                        {{ alert.created_at.strftime('%d %b, %H:%M') }}
+                    </small>
+
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="text-muted py-4">
+                No active alerts.
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document
+        .querySelectorAll(".progress-bar[data-width]")
+        .forEach(function (bar) {
+
+            const width = bar.dataset.width || "0";
+
+            bar.style.width = width + "%";
+
+        });
+
+});
+</script>
+
+<script>
+window.initDashboard();
+</script>
+
+{% endblock %}

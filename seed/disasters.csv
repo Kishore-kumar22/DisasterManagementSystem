@@ -1,0 +1,6 @@
+title,disaster_type,description,severity,affected_population,latitude,longitude,status,occurred_at
+Monsoon drainage overflow,Flood,Drainage overflow in the east district,Medium,560,12.9716,77.5946,Resolved,2025-06-12T09:00
+Warehouse smoke incident,Fire,Smoke reported near a logistics warehouse,Low,90,19.0760,72.8777,Resolved,2025-07-04T14:00
+Hill settlement access loss,Landslide,Rockfall has blocked one access road,High,720,30.3165,78.0322,Reported,2025-08-22T08:00
+Community shelter demand,Storm,Storm damage increased temporary shelter demand,Medium,1250,13.0827,80.2707,Resolved,2025-09-18T11:00
+Water supply disruption,Heatwave,Extreme heat caused water distribution pressure,High,2100,28.6139,77.2090,Responding,2025-10-03T13:00

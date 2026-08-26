@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Add Shelter | Responda{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="eyebrow">SHELTER MANAGEMENT</div>
+        <h1>Add emergency shelter</h1>
+        <p>Register a shelter and track its current occupancy.</p>
+    </div>
+
+    <a href="{{ url_for('main.shelters') }}" class="btn btn-outline-secondary">
+        Cancel
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label">Shelter name *</label>
+                    <input
+                        type="text"
+                        name="name"
+                        class="form-control"
+                        placeholder="e.g. Chennai Community Hall"
+                        required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Location *</label>
+                    <input
+                        type="text"
+                        name="location"
+                        class="form-control"
+                        placeholder="e.g. Anna Nagar, Chennai"
+                        required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Capacity *</label>
+                    <input
+                        type="number"
+                        name="capacity"
+                        class="form-control"
+                        min="0"
+                        value="100"
+                        required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Currently occupied *</label>
+                    <input
+                        type="number"
+                        name="occupied"
+                        class="form-control"
+                        min="0"
+                        value="0"
+                        required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Contact</label>
+                    <input
+                        type="text"
+                        name="contact"
+                        class="form-control"
+                        placeholder="Phone / coordinator">
+                </div>
+
+            </div>
+
+            <div class="alert alert-info mt-4">
+                Shelter status is automatically calculated from occupancy:
+                <strong>Available</strong>, <strong>Nearly Full</strong>, or
+                <strong>Full</strong>.
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Create shelter
+            </button>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
